@@ -2,6 +2,11 @@ export type CommentCreateMutationVariables = {|
   input: {
     clientMutationId?: ?string,
     feedbackId?: ?string,
+    feedback?: ?{
+      comment?: ?{
+        feedback?: any,
+      },
+    },
   },
   first?: ?number,
   orderBy?: ?$ReadOnlyArray<string>,

@@ -26,6 +26,7 @@ const {
   GraphQLType,
   GraphQLUnionType,
 } = require('graphql');
+const {getRawType} = require('GraphQLSchemaUtils');
 
 export type ScalarTypeMapping = {
   [type: string]: string,
@@ -100,6 +101,22 @@ function transformInputType(type: GraphQLInputType, state: State) {
   }
 }
 
+function transformInputObjectField(name: string, type: GraphQLInputType, state: State) {
+  const { generatedTypes } = state;
+  const id = t.identifier(name);
+  if (generatedTypes.indexOf(getRawType(type).toString()) > -1) {
+    const anyType = t.anyTypeAnnotation();
+    if (type instanceof GraphQLList)
+      return t.objectTypeProperty(id, readOnlyArrayOfType(anyType));
+    else
+      return t.objectTypeProperty(id, anyType);
+  }
+  return t.objectTypeProperty(
+    id,
+    transformInputType(type, state),
+  )
+}
+
 function transformNonNullableInputType(type: GraphQLInputType, state: State) {
   if (type instanceof GraphQLList) {
     return readOnlyArrayOfType(transformInputType(type.ofType, state));
@@ -108,15 +125,13 @@ function transformNonNullableInputType(type: GraphQLInputType, state: State) {
   } else if (type instanceof GraphQLEnumType) {
     return transformGraphQLEnumType(type, state);
   } else if (type instanceof GraphQLInputObjectType) {
+    state.generatedTypes.push(getRawType(type).toString());
     const fields = type.getFields();
     const props = Object.keys(fields)
       .map(key => fields[key])
       .filter(field => state.inputFieldWhiteList.indexOf(field.name) < 0)
       .map(field => {
-        const property = t.objectTypeProperty(
-          t.identifier(field.name),
-          transformInputType(field.type, state),
-        );
+        const property = transformInputObjectField(field.name, field.type, state);
         if (!(field.type instanceof GraphQLNonNull)) {
           property.optional = true;
         }

@@ -54,6 +54,7 @@ type Options = {|
 
 export type State = {|
   ...Options,
+  +generatedTypes: Array<string>,
   +usedEnums: {[name: string]: GraphQLEnumType},
   +usedFragments: Set<string>,
 |};
@@ -224,6 +225,7 @@ function createVisitor(options: Options) {
     existingFragmentNames: options.existingFragmentNames,
     inputFieldWhiteList: options.inputFieldWhiteList,
     relayRuntimeModule: options.relayRuntimeModule,
+    generatedTypes: [],
     usedEnums: {},
     usedFragments: new Set(),
     useHaste: options.useHaste,

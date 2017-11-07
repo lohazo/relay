@@ -8,6 +8,11 @@ export type TestMutationVariables = {|
   input: {
     clientMutationId?: ?string,
     feedbackId?: ?string,
+    feedback?: ?{
+      comment?: ?{
+        feedback?: any,
+      },
+    },
   },
 |};
 export type TestMutationResponse = {|
